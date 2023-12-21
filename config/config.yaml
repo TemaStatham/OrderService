@@ -3,3 +3,10 @@ nats:
     cluster_id: "clusterID"
     client_id: "clientID"
     subject: subject
+db:
+    dbhost: localhost
+    dbport: 5432
+    dbuser: postgres
+    dbpassword: root
+    dbname: orders
+    dbsslmode: disable

@@ -14,9 +14,20 @@ type NatsConfig struct {
 	Subject   string `mapstructure:"subject"`
 }
 
+// DBConfig :
+type DBConfig struct {
+	DBHost     string `mapstructure:"dbhost"`
+	DBPort     string `mapstructure:"dbport"`
+	DBUser     string `mapstructure:"dbuser"`
+	DBPassword string `mapstructure:"dbpassword"`
+	DBName     string `mapstructure:"dbname"`
+	DBSSLMode  string `mapstructure:"dbsslmode"`
+}
+
 // Config : структура файла конфигурации
 type Config struct {
 	NATS NatsConfig `mapstructure:"nats"`
+	DB   DBConfig   `mapstructure:"db"`
 }
 
 // Load : загружает файл конфигурации

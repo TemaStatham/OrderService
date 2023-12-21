@@ -1,5 +1,8 @@
 package nats
 
-func Connect() {
+import "github.com/TemaStatham/OrderService/config"
+
+// Connect :
+func Connect(cfg config.Config) {
 
 }
