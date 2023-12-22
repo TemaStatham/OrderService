@@ -7,11 +7,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/TemaStatham/OrderService/pkg/cache"
 	"github.com/TemaStatham/OrderService/pkg/model"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
 )
+
+const lifetimeElementInsideCache = 5 * time.Hour
 
 // NatsConnConfig : a
 type NatsConnConfig struct {
@@ -27,46 +31,55 @@ type StreamConnConfig struct {
 	DurableName string
 }
 
-// Config :
+// Config : 
 type Config struct {
 	NatsConnConfig
 	StreamConnConfig
 }
 
-// Connect :
-func Connect(cfg Config) {
+// Connect : 
+func Connect(c *cache.Cache, cfg Config) {
 	nc, err := nats.Connect(cfg.NatsConnConfig.URL)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	sc, err := stan.Connect(cfg.NatsConnConfig.ClusterID, cfg.NatsConnConfig.ClientID, stan.NatsConn(nc))
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 	defer sc.Close()
-	
-	sub, err := sc.QueueSubscribe(cfg.StreamConnConfig.Subject, cfg.StreamConnConfig.QueueGroup, handleRequest, stan.DurableName(cfg.StreamConnConfig.DurableName))
+
+	sub, err := sc.QueueSubscribe(
+		cfg.StreamConnConfig.Subject,
+		cfg.StreamConnConfig.QueueGroup,
+		func(msg *stan.Msg) {
+			handleRequest(msg, c)
+		},
+		stan.DurableName(cfg.StreamConnConfig.DurableName),
+	)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 	defer sub.Unsubscribe()
 
 	waitForSignal(&sub)
 }
 
-func handleRequest(msg *stan.Msg) {
+func handleRequest(msg *stan.Msg, c *cache.Cache) {
 	data := model.OrderClient{}
+	
 	err := json.Unmarshal(msg.Data, &data)
 	if err != nil {
 		return
 	}
-	// if ok := s.addToCache(data); ok {
-	// 	if err := s.addOrder(data); err != nil {
-    //   log.Printf("Order adding error: %w\n", err)
-    // }
-	// 	log.Printf("Data are updated\n")
-  	fmt.Printf("Received a message: %v\n", data)
+
+	c.Set(data.OrderUID, data, lifetimeElementInsideCache)
+
+	fmt.Printf("Received a message: %v\n", data)
 }
 
 func waitForSignal(sub *stan.Subscription) {

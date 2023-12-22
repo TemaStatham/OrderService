@@ -6,6 +6,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+// ServConfig :
+type ServConfig struct {
+	Host string `mapstructure:"host"`
+	Port string `mapstructure:"port"`
+}
+
 // NatsConfig : конфигурация для nuts-streaming
 type NatsConfig struct {
 	URL       string `mapstructure:"url"`
@@ -26,8 +32,9 @@ type DBConfig struct {
 
 // Config : структура файла конфигурации
 type Config struct {
-	NATS NatsConfig `mapstructure:"nats"`
-	DB   DBConfig   `mapstructure:"db"`
+	NatsConfig `mapstructure:"nats"`
+	DBConfig   `mapstructure:"db"`
+	ServConfig `mapstructure:"serv"`
 }
 
 // Load : загружает файл конфигурации

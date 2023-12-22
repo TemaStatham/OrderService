@@ -8,159 +8,159 @@ import (
 
 // Cache : структура описывающуя наш контейнер-хранилище
 type Cache struct {
-    sync.RWMutex
-    defaultExpiration time.Duration
-    cleanupInterval   time.Duration
-    items             map[string]Item
+	sync.RWMutex
+	defaultExpiration time.Duration
+	cleanupInterval   time.Duration
+	items             map[string]Item
 }
 
 // Item : структура для элемента
 type Item struct {
-    Value      interface{}
-    Created    time.Time
-    Expiration int64
+	Value      interface{}
+	Created    time.Time
+	Expiration int64
 }
 
 // New : инициализация нового контейнера-хранилища
 func New(defaultExpiration, cleanupInterval time.Duration) *Cache {
-    // инициализируем карту(map) в паре ключ(string)/значение(Item)
-    items := make(map[string]Item)
+	// инициализируем карту(map) в паре ключ(string)/значение(Item)
+	items := make(map[string]Item)
 
-    cache := Cache{
-        items:             items,
-        defaultExpiration: defaultExpiration,
-        cleanupInterval:   cleanupInterval,
-    }
+	cache := Cache{
+		items:             items,
+		defaultExpiration: defaultExpiration,
+		cleanupInterval:   cleanupInterval,
+	}
 
-    // Если интервал очистки больше 0, запускаем GC (удаление устаревших элементов)
-    if cleanupInterval > 0 {
-        cache.StartGC() // данный метод рассматривается ниже
-    }
+	// Если интервал очистки больше 0, запускаем GC (удаление устаревших элементов)
+	if cleanupInterval > 0 {
+		cache.StartGC() // данный метод рассматривается ниже
+	}
 
-    return &cache
+	return &cache
 }
 
 // Set : возможность записывать данные в кэш
 func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
 
-    var expiration int64
+	var expiration int64
 
-    // Если продолжительность жизни равна 0 - используется значение по-умолчанию
-    if duration == 0 {
-        duration = c.defaultExpiration
-    }
+	// Если продолжительность жизни равна 0 - используется значение по-умолчанию
+	if duration == 0 {
+		duration = c.defaultExpiration
+	}
 
-    // Устанавливаем время истечения кеша
-    if duration > 0 {
-        expiration = time.Now().Add(duration).UnixNano()
-    }
+	// Устанавливаем время истечения кеша
+	if duration > 0 {
+		expiration = time.Now().Add(duration).UnixNano()
+	}
 
-    c.Lock()
+	c.Lock()
 
-    defer c.Unlock()
+	defer c.Unlock()
 
-    c.items[key] = Item{
-        Value:      value,
-        Expiration: expiration,
-        Created:    time.Now(),
-    }
+	c.items[key] = Item{
+		Value:      value,
+		Expiration: expiration,
+		Created:    time.Now(),
+	}
 
 }
 
 // Get : метод для получения значений
 func (c *Cache) Get(key string) (interface{}, bool) {
 
-    c.RLock()
+	c.RLock()
 
-    defer c.RUnlock()
+	defer c.RUnlock()
 
-    item, found := c.items[key]
+	item, found := c.items[key]
 
-    // ключ не найден
-    if !found {
-        return nil, false
-    }
+	// ключ не найден
+	if !found {
+		return nil, false
+	}
 
-    // Проверка на установку времени истечения, в противном случае он бессрочный
-    if item.Expiration > 0 {
+	// Проверка на установку времени истечения, в противном случае он бессрочный
+	if item.Expiration > 0 {
 
-        // Если в момент запроса кеш устарел возвращаем nil
-        if time.Now().UnixNano() > item.Expiration {
-            return nil, false
-        }
+		// Если в момент запроса кеш устарел возвращаем nil
+		if time.Now().UnixNano() > item.Expiration {
+			return nil, false
+		}
 
-    }
+	}
 
-    return item.Value, true
+	return item.Value, true
 }
 
 // Delete : возможность удалить кеш
 func (c *Cache) Delete(key string) error {
 
-    c.Lock()
+	c.Lock()
 
-    defer c.Unlock()
+	defer c.Unlock()
 
-    if _, found := c.items[key]; !found {
-        return errors.New("Key not found")
-    }
+	if _, found := c.items[key]; !found {
+		return errors.New("Key not found")
+	}
 
-    delete(c.items, key)
+	delete(c.items, key)
 
-    return nil
+	return nil
 }
 
 // StartGC : поиск просроченных ключей с последующей очисткой (GC)
 // Для этого напишем метод StartGC, который запускается при инициализация нового экземпляра кеша New и работает пока программа не будет завершена.
-func (c *Cache) StartGC()  {
-    go c.GC()
+func (c *Cache) StartGC() {
+	go c.GC()
 }
 
-// GC : 
+// GC :
 func (c *Cache) GC() {
 
-    for {
-        // ожидаем время установленное в cleanupInterval
-        <-time.After(c.cleanupInterval)
+	for {
+		// ожидаем время установленное в cleanupInterval
+		<-time.After(c.cleanupInterval)
 
-        if c.items == nil {
-            return
-        }
+		if c.items == nil {
+			return
+		}
 
-        // Ищем элементы с истекшим временем жизни и удаляем из хранилища
-        if keys := c.expiredKeys(); len(keys) != 0 {
-            c.clearItems(keys)
+		// Ищем элементы с истекшим временем жизни и удаляем из хранилища
+		if keys := c.expiredKeys(); len(keys) != 0 {
+			c.clearItems(keys)
 
-        }
+		}
 
-    }
+	}
 
 }
 
 // expiredKeys возвращает список "просроченных" ключей
 func (c *Cache) expiredKeys() (keys []string) {
 
-    c.RLock()
+	c.RLock()
 
-    defer c.RUnlock()
+	defer c.RUnlock()
 
-    for k, i := range c.items {
-        if time.Now().UnixNano() > i.Expiration && i.Expiration > 0 {
-            keys = append(keys, k)
-        }
-    }
+	for k, i := range c.items {
+		if time.Now().UnixNano() > i.Expiration && i.Expiration > 0 {
+			keys = append(keys, k)
+		}
+	}
 
-    return
+	return
 }
 
 // clearItems удаляет ключи из переданного списка, в нашем случае "просроченные"
 func (c *Cache) clearItems(keys []string) {
 
-    c.Lock()
+	c.Lock()
 
-    defer c.Unlock()
+	defer c.Unlock()
 
-    for _, k := range keys {
-        delete(c.items, k)
-    }
+	for _, k := range keys {
+		delete(c.items, k)
+	}
 }

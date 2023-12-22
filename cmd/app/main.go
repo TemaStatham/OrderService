@@ -1,12 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/TemaStatham/OrderService/config"
 	"github.com/TemaStatham/OrderService/pkg/cache"
+	"github.com/TemaStatham/OrderService/pkg/handler"
 	"github.com/TemaStatham/OrderService/pkg/repository"
+	"github.com/TemaStatham/OrderService/pkg/server"
+	"github.com/TemaStatham/OrderService/pkg/service"
 )
 
 const (
@@ -14,8 +22,8 @@ const (
 	cfgType = "yaml"
 	cfgPath = "./config"
 
-	cacheLifetime = 0
-	lifetimeElementInsideCache = 10 * time.Minute
+	cacheLifetime              = 0
+	lifetimeElementInsideCache = 10 * time.Hour
 )
 
 func main() {
@@ -26,12 +34,12 @@ func main() {
 	}
 
 	db, err := repository.NewPostgresDB(repository.Config{
-		Host:     cfg.DB.DBHost,
-		Port:     cfg.DB.DBPort,
-		Username: cfg.DB.DBUser,
-		Password: cfg.DB.DBPassword,
-		DBName:   cfg.DB.DBName,
-		SSLMode:  cfg.DB.DBSSLMode,
+		Host:     cfg.DBConfig.DBHost,
+		Port:     cfg.DBConfig.DBPort,
+		Username: cfg.DBConfig.DBUser,
+		Password: cfg.DBConfig.DBPassword,
+		DBName:   cfg.DBConfig.DBName,
+		SSLMode:  cfg.DBConfig.DBSSLMode,
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -39,10 +47,28 @@ func main() {
 	}
 
 	c := cache.New(cacheLifetime, lifetimeElementInsideCache)
-	fmt.Print(c)
 
-	repos := repository.NewRepository(db)
-	fmt.Print(repos)
+	repos := repository.NewRepository(db, c)
+	service := service.NewService(repos)
+	hand := handler.NewHandler(service)
+	srv := new(server.Server)
+	go func() {
+		if err := srv.Run(cfg.ServConfig.Port, hand.InitRoutes()); err != nil {
+			log.Fatalf("error occured while running http server: %s", err.Error())
+		}
+	}()
 
-	
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+
+	log.Print("TodoApp Shutting Down")
+
+	if err := srv.Shutdown(context.Background()); err != nil {
+		log.Fatal("error occured on server shutting down: %s", err.Error())
+	}
+
+	if err := db.Close(); err != nil {
+		log.Fatal("error occured on db connection close: %s", err.Error())
+	}
 }

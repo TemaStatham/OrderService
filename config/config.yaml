@@ -10,3 +10,6 @@ db:
     dbpassword: root
     dbname: orders
     dbsslmode: disable
+serv:
+    port: 8080
+    host: localhost
