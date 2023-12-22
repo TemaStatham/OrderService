@@ -2,10 +2,12 @@ package repository
 
 import (
 	"github.com/TemaStatham/OrderService/pkg/cache"
+	"github.com/TemaStatham/OrderService/pkg/model"
 	"github.com/jmoiron/sqlx"
 )
 
 type Orders interface {
+	AddOrder(order *model.OrderClient) (int, error)
 }
 
 type Repository struct {

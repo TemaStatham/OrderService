@@ -31,13 +31,13 @@ type StreamConnConfig struct {
 	DurableName string
 }
 
-// Config : 
+// Config :
 type Config struct {
 	NatsConnConfig
 	StreamConnConfig
 }
 
-// Connect : 
+// Connect :
 func Connect(c *cache.Cache, cfg Config) {
 	nc, err := nats.Connect(cfg.NatsConnConfig.URL)
 	if err != nil {
@@ -71,7 +71,7 @@ func Connect(c *cache.Cache, cfg Config) {
 
 func handleRequest(msg *stan.Msg, c *cache.Cache) {
 	data := model.OrderClient{}
-	
+
 	err := json.Unmarshal(msg.Data, &data)
 	if err != nil {
 		return

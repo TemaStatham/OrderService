@@ -12,6 +12,6 @@ func NewOrderService(r *repository.Orders) *OrderSerice {
 	}
 }
 
-func (o *OrderSerice) AddNewItemInCache() {
+func (o *OrderSerice) GetItem(orderID string) {
 
 }

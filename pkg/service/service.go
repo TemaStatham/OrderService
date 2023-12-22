@@ -3,6 +3,7 @@ package service
 import "github.com/TemaStatham/OrderService/pkg/repository"
 
 type Order interface {
+	GetItem(orderID string)
 }
 
 type Service struct {

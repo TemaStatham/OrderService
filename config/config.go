@@ -14,10 +14,13 @@ type ServConfig struct {
 
 // NatsConfig : конфигурация для nuts-streaming
 type NatsConfig struct {
-	URL       string `mapstructure:"url"`
-	ClusterID string `mapstructure:"cluster_id"`
-	ClientID  string `mapstructure:"client_id"`
-	Subject   string `mapstructure:"subject"`
+	URL         string `mapstructure:"url"`
+	ClusterID   string `mapstructure:"cluster_id"`
+	ClientID    string `mapstructure:"client_id"`
+	Canal       string `mapstructure:"canal"`
+	Subject     string `mapstructure:"subject"`
+	QueueGroup  string `mapstructure:"queue_group"`
+	DurableName string `mapstructure:"dur_name"`
 }
 
 // DBConfig :
