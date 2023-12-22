@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/TemaStatham/OrderService/config"
+	"github.com/TemaStatham/OrderService/pkg/cache"
 	"github.com/TemaStatham/OrderService/pkg/repository"
 )
 
@@ -11,6 +13,9 @@ const (
 	cfgName = "config"
 	cfgType = "yaml"
 	cfgPath = "./config"
+
+	cacheLifetime = 0
+	lifetimeElementInsideCache = 10 * time.Minute
 )
 
 func main() {
@@ -33,6 +38,11 @@ func main() {
 		return
 	}
 
+	c := cache.New(cacheLifetime, lifetimeElementInsideCache)
+	fmt.Print(c)
+
 	repos := repository.NewRepository(db)
 	fmt.Print(repos)
+
+	
 }
