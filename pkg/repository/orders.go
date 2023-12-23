@@ -34,7 +34,7 @@ func (o *OrdersPostgres) GetOrder(orderID string) (*model.OrderClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	order.Items = *&items
+	order.Items = items
 
 	delivery, err := o.GetDelivery(orderID)
 	if err != nil {
@@ -47,7 +47,7 @@ func (o *OrdersPostgres) GetOrder(orderID string) (*model.OrderClient, error) {
 
 // GetPayment : Запрос для получения информации о платеже
 func (o *OrdersPostgres) GetPayment(orderID string) (*model.Payment, error) {
-	paymentQuery := "SELECT * FROM order_payment WHERE order_uid = $1"
+	paymentQuery := "SELECT transaction, request_id, currency, provider, amount, payment_dt, bank, delivery_cost, goods_total, custom_fee FROM order_payment WHERE order_uid = $1"
 
 	var payment model.Payment
 	if err := o.db.Get(&payment, paymentQuery, orderID); err != nil {
@@ -59,7 +59,7 @@ func (o *OrdersPostgres) GetPayment(orderID string) (*model.Payment, error) {
 
 // GetItems : Запрос для получения информации о товарах
 func (o *OrdersPostgres) GetItems(orderID string) ([]model.Item, error) {
-	itemsQuery := "SELECT * FROM order_items WHERE order_uid = $1"
+	itemsQuery := "SELECT chrt_id, track_number, price, rid, name, sale, size, total_price, nm_id, brand, status FROM order_items WHERE order_uid = $1;"
 
 	var items []model.Item
 	if err := o.db.Select(&items, itemsQuery, orderID); err != nil {
@@ -71,7 +71,7 @@ func (o *OrdersPostgres) GetItems(orderID string) ([]model.Item, error) {
 
 // GetDelivery : Запрос для получения информации о доставке
 func (o *OrdersPostgres) GetDelivery(orderID string) (*model.Delivery, error) {
-	deliveryQuery := "SELECT * FROM order_delivery WHERE order_uid = $1"
+	deliveryQuery := "SELECT name, phone, zip, city, address, region, email FROM order_delivery WHERE order_uid = $1;"
 
 	var delivery model.Delivery
 	if err := o.db.Get(&delivery, deliveryQuery, orderID); err != nil {
@@ -94,7 +94,7 @@ func (o *OrdersPostgres) AddOrder(order *model.OrderClient) (string, error) {
 		}
 		err = tx.Commit()
 	}()
-	
+
 	fmt.Print("4\n")
 	orderID, err := o.addOrder(tx, order)
 	if err != nil {
@@ -122,7 +122,7 @@ func (o *OrdersPostgres) AddOrder(order *model.OrderClient) (string, error) {
 		}
 		// itemIDs = append(itemIDs, itemID)
 	}
-	
+
 	fmt.Print("5\n")
 	return orderID, nil
 }
@@ -149,7 +149,7 @@ func (o *OrdersPostgres) addPayment(tx *sqlx.Tx, payment model.Payment, orderID 
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		RETURNING order_uid
 	`
-	row := tx.QueryRow(query,orderID, payment.Transaction, payment.RequestID, payment.Currency, payment.Provider, payment.Amount,
+	row := tx.QueryRow(query, orderID, payment.Transaction, payment.RequestID, payment.Currency, payment.Provider, payment.Amount,
 		payment.PaymentDt, payment.Bank, payment.DeliveryCost, payment.GoodsTotal, payment.CustomFee)
 
 	var paymentID string
@@ -166,7 +166,7 @@ func (o *OrdersPostgres) addItem(tx *sqlx.Tx, item model.Item, orderID string) (
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		RETURNING order_uid
 	`
-	row := tx.QueryRow(query,orderID, item.ChrtID, item.TrackNumber, item.Price, item.Rid, item.Name, item.Sale, item.Size, item.TotalPrice,
+	row := tx.QueryRow(query, orderID, item.ChrtID, item.TrackNumber, item.Price, item.Rid, item.Name, item.Sale, item.Size, item.TotalPrice,
 		item.NmID, item.Brand, item.Status)
 
 	var itemID string

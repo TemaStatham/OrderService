@@ -79,7 +79,7 @@ func (c *Cache) Set(key string, value *model.OrderClient, duration time.Duration
 }
 
 // Get : метод для получения значений
-func (c *Cache) Get(key string) (interface{}, bool) {
+func (c *Cache) Get(key string) (*model.OrderClient, bool) {
 
 	c.RLock()
 
@@ -87,19 +87,8 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 
 	item, found := c.items[key]
 
-	// ключ не найден
 	if !found {
 		return nil, false
-	}
-
-	// Проверка на установку времени истечения, в противном случае он бессрочный
-	if item.Expiration > 0 {
-
-		// Если в момент запроса кеш устарел возвращаем nil
-		if time.Now().UnixNano() > item.Expiration {
-			return nil, false
-		}
-
 	}
 
 	return item.Value, true

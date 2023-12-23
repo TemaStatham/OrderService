@@ -24,7 +24,7 @@ const (
 	cfgPath = "./config"
 
 	cacheLifetime              = 5 * time.Hour
-	lifetimeElementInsideCache = 5 * time.Second
+	lifetimeElementInsideCache = 60 * time.Second
 )
 
 func main() {
@@ -49,11 +49,10 @@ func main() {
 
 	repos := repository.NewRepository(db)
 	service := service.NewService(repos)
-	hand := handler.NewHandler(service)
-	srv := new(server.Server)
 
 	c := cache.New(cacheLifetime, lifetimeElementInsideCache, service)
-	//c.StartGC()
+	hand := handler.NewHandler(service, c)
+	srv := new(server.Server)
 
 	go func() {
 		nats.Connect(c, nats.Config{

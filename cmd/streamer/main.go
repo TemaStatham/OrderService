@@ -91,17 +91,17 @@ func GetRandomOrder() model.OrderClient {
 		},
 		Items: []model.Item{
 			{
-				ChrtID:      rand.Intn(1000),    // случайное значение int до 1000
+				ChrtID:      rand.Intn(1000), // случайное значение int до 1000
 				TrackNumber: getRandomString(10),
-				Price:       rand.Intn(1000),    // случайное значение int до 1000
+				Price:       rand.Intn(1000), // случайное значение int до 1000
 				Rid:         getRandomString(10),
 				Name:        getRandomString(10),
-				Sale:        rand.Intn(100),     // случайное значение int до 100
+				Sale:        rand.Intn(100), // случайное значение int до 100
 				Size:        getRandomString(5),
-				TotalPrice:  rand.Intn(1000),    // случайное значение int до 1000
-				NmID:        rand.Intn(1000),    // случайное значение int до 1000
+				TotalPrice:  rand.Intn(1000), // случайное значение int до 1000
+				NmID:        rand.Intn(1000), // случайное значение int до 1000
 				Brand:       getRandomString(10),
-				Status:      rand.Intn(1000),    // случайное значение int до 1000
+				Status:      rand.Intn(1000), // случайное значение int до 1000
 			},
 		},
 		Locale:            getRandomString(5),
@@ -109,8 +109,8 @@ func GetRandomOrder() model.OrderClient {
 		CustomerID:        getRandomString(10),
 		DeliveryService:   getRandomString(10),
 		Shardkey:          getRandomString(5),
-		SmID:              rand.Intn(1000),       // случайное значение int до 1000
-		DateCreated:       getRandomTime(),        // случайная дата и время
+		SmID:              rand.Intn(1000), // случайное значение int до 1000
+		DateCreated:       getRandomTime(), // случайная дата и время
 		OofShard:          getRandomString(10),
 	}
 }

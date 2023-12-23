@@ -28,6 +28,6 @@ func (o *OrderSerice) AddOrder(order *model.OrderClient) (string, error) {
 	if order == nil {
 		return "", fmt.Errorf("orderptr is nil")
 	}
-	
+
 	return o.r.AddOrder(order)
 }

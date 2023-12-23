@@ -6,8 +6,46 @@
         <title>Order Details</title>
     </head>
     <body>
-        <h1>Order Details</h1>
-        <p>Order ID: {{.orderID}}</p>
-        <!-- Другие детали заказа... -->
+        <form id="orderForm">
+            <label for="orderID">OrderID: </label>
+            <input type="text" id="orderID" name="orderID" required />
+
+            <button type="button" onclick="submitForm()">Submit</button>
+            <div id="result"></div>
+        </form>
+
+        <script>
+            function submitForm() {
+                const formData = {
+                    id: document.getElementById("orderID").value,
+                };
+
+                fetch("/orders", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(formData),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log("Success:", data);
+
+                        // Отобразим полученные данные в div с id "result"
+                        const resultDiv = document.getElementById("result");
+                        resultDiv.innerHTML = `<p>Message: ${data.message}</p>`;
+
+                        // Добавим отображение данных заказа (пример)
+                        if (data.order) {
+                            resultDiv.innerHTML += `<p>Order Details: ${JSON.stringify(
+                                data.order
+                            )}</p>`;
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                    });
+            }
+        </script>
     </body>
 </html>
