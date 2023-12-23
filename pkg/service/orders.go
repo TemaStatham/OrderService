@@ -31,3 +31,11 @@ func (o *OrderSerice) AddOrder(order *model.OrderClient) (string, error) {
 
 	return o.r.AddOrder(order)
 }
+
+func (o *OrderSerice) GetRecentOrders(countOrders int) ([]*model.OrderClient, error) {
+	if countOrders <= 0 {
+		return []*model.OrderClient{}, fmt.Errorf("count orders unvalue\n")
+	}
+
+	return o.r.GetRecentOrders(countOrders)
+}

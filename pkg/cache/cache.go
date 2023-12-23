@@ -11,6 +11,12 @@ import (
 	"github.com/TemaStatham/OrderService/pkg/service"
 )
 
+
+const (
+	countOfRestoredItems       = 10
+	lifetimeElementInsideCache = 60
+)
+
 // Cache : структура описывающуя наш контейнер-хранилище
 type Cache struct {
 	sync.RWMutex
@@ -43,6 +49,11 @@ func New(defaultExpiration, cleanupInterval time.Duration, service *service.Serv
 	if cleanupInterval > 0 {
 		cache.StartGC()
 	}
+
+	// Инициализация кэша из базы данных
+    if err := cache.RestoreCache(); err != nil {
+        log.Printf("Failed to restore data from database: %v", err)
+    }
 
 	return &cache
 }
@@ -186,3 +197,24 @@ func (c *Cache) writeToDatabase(keys []string) {
 // 		delete(c.items, k)
 // 	}
 // }
+
+// RestoreCache получает данные из базы данных и инициализирует кэш
+func (c *Cache) RestoreCache() error {
+	orders, err := c.service.GetRecentOrders(countOfRestoredItems)
+	if err != nil {
+		return err
+	}
+
+	c.Lock()
+	defer c.Unlock()
+
+	for _, order := range orders {
+		c.items[order.OrderUID] = Item{
+			Value:      order,
+			Expiration: lifetimeElementInsideCache,
+			Created:    time.Now(),
+		}
+	}
+
+	return nil
+}

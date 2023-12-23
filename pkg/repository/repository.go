@@ -11,6 +11,7 @@ type Orders interface {
 	GetItems(orderID string) ([]model.Item, error)
 	GetDelivery(orderID string) (*model.Delivery, error)
 	AddOrder(order *model.OrderClient) (string, error)
+	GetRecentOrders(count int) ([]*model.OrderClient, error)
 }
 
 type Repository struct {

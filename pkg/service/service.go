@@ -8,6 +8,7 @@ import (
 type Order interface {
 	GetOrder(orderID string) (*model.OrderClient, error)
 	AddOrder(order *model.OrderClient) (string, error)
+	GetRecentOrders(countOrders int) ([]*model.OrderClient, error)
 }
 
 type Service struct {

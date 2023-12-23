@@ -24,23 +24,10 @@ func (o *OrdersPostgres) GetOrder(orderID string) (*model.OrderClient, error) {
 		return nil, err
 	}
 
-	payment, err := o.GetPayment(orderID)
+	err := o.populateOrderDetails(&order)
 	if err != nil {
 		return nil, err
 	}
-	order.Payment = *payment
-
-	items, err := o.GetItems(orderID)
-	if err != nil {
-		return nil, err
-	}
-	order.Items = items
-
-	delivery, err := o.GetDelivery(orderID)
-	if err != nil {
-		return nil, err
-	}
-	order.Delivery = *delivery
 
 	return &order, nil
 }
@@ -194,4 +181,52 @@ func (o *OrdersPostgres) addOrder(tx *sqlx.Tx, order *model.OrderClient) (string
 	}
 
 	return orderID, nil
+}
+
+// GetRecentOrders возвращает последние несколько заказов из базы данных.
+func (o *OrdersPostgres) GetRecentOrders(count int) ([]*model.OrderClient, error) {
+	query := `
+		SELECT * FROM orders
+		ORDER BY date_created DESC
+		LIMIT $1
+	`
+
+	var orders []*model.OrderClient
+	if err := o.db.Select(&orders, query, count); err != nil {
+		return nil, err
+	}
+
+	// Для каждого заказа получаем дополнительные данные
+	for _, order := range orders {
+		if err := o.populateOrderDetails(order); err != nil {
+			return nil, err
+		}
+	}
+
+	return orders, nil
+}
+
+// populateOrderDetails заполняет дополнительные данные для указанного заказа.
+func (o *OrdersPostgres) populateOrderDetails(order *model.OrderClient) error {
+	orderID := order.OrderUID
+
+	payment, err := o.GetPayment(orderID)
+	if err != nil {
+		return err
+	}
+	order.Payment = *payment
+
+	items, err := o.GetItems(orderID)
+	if err != nil {
+		return err
+	}
+	order.Items = items
+
+	delivery, err := o.GetDelivery(orderID)
+	if err != nil {
+		return err
+	}
+	order.Delivery = *delivery
+
+	return nil
 }

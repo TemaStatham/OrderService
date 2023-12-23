@@ -40,7 +40,7 @@ func (h *Handler) getOrders(c *gin.Context) {
 		return
 	}
 	fmt.Print("check order in db\n")
-	
+
 	order, err := h.services.GetOrder(requestData.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error db": err.Error()})
