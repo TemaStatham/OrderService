@@ -1,8 +1,7 @@
 nats:
-    url: nats://localhost:4222
+    url: nats://127.0.0.1:4222
     cluster_id: "clusterID"
     client_id: "clientID"
-    canal: "orders"
     subject: subject
     queue_group: "group"
     dur_name: "name"

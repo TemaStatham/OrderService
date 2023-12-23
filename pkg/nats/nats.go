@@ -15,7 +15,10 @@ import (
 	"github.com/nats-io/stan.go"
 )
 
-const lifetimeElementInsideCache = 5 * time.Hour
+const (
+	lifetimeElementInsideCache = 5 * time.Hour
+	subPref                    = "sub"
+)
 
 // NatsConnConfig : a
 type NatsConnConfig struct {
@@ -45,7 +48,7 @@ func Connect(c *cache.Cache, cfg Config) {
 		return
 	}
 
-	sc, err := stan.Connect(cfg.NatsConnConfig.ClusterID, cfg.NatsConnConfig.ClientID, stan.NatsConn(nc))
+	sc, err := stan.Connect(cfg.NatsConnConfig.ClusterID, cfg.NatsConnConfig.ClientID+subPref, stan.NatsConn(nc))
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -74,6 +77,7 @@ func handleRequest(msg *stan.Msg, c *cache.Cache) {
 
 	err := json.Unmarshal(msg.Data, &data)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 

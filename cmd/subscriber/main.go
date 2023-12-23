@@ -12,6 +12,7 @@ import (
 	"github.com/TemaStatham/OrderService/config"
 	"github.com/TemaStatham/OrderService/pkg/cache"
 	"github.com/TemaStatham/OrderService/pkg/handler"
+	"github.com/TemaStatham/OrderService/pkg/nats"
 	"github.com/TemaStatham/OrderService/pkg/repository"
 	"github.com/TemaStatham/OrderService/pkg/server"
 	"github.com/TemaStatham/OrderService/pkg/service"
@@ -48,18 +49,20 @@ func main() {
 
 	c := cache.New(cacheLifetime, lifetimeElementInsideCache)
 
-	// nats.Connect(c, nats.Config{
-	// 	NatsConnConfig: nats.NatsConnConfig{
-	// 		URL:       cfg.NatsConfig.URL,
-	// 		ClientID:  cfg.NatsConfig.ClientID,
-	// 		ClusterID: cfg.NatsConfig.ClusterID,
-	// 	},
-	// 	StreamConnConfig: nats.StreamConnConfig{
-	// 		Subject:     cfg.NatsConfig.Subject,
-	// 		QueueGroup:  cfg.NatsConfig.QueueGroup,
-	// 		DurableName: cfg.NatsConfig.DurableName,
-	// 	},
-	// })
+	go func() {
+		nats.Connect(c, nats.Config{
+			NatsConnConfig: nats.NatsConnConfig{
+				URL:       cfg.NatsConfig.URL,
+				ClientID:  cfg.NatsConfig.ClientID,
+				ClusterID: cfg.NatsConfig.ClusterID,
+			},
+			StreamConnConfig: nats.StreamConnConfig{
+				Subject:     cfg.NatsConfig.Subject,
+				QueueGroup:  cfg.NatsConfig.QueueGroup,
+				DurableName: cfg.NatsConfig.DurableName,
+			},
+		})
+	}()
 
 	repos := repository.NewRepository(db, c)
 	service := service.NewService(repos)
