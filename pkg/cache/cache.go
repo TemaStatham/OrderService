@@ -2,8 +2,13 @@ package cache
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"sync"
 	"time"
+
+	"github.com/TemaStatham/OrderService/pkg/model"
+	"github.com/TemaStatham/OrderService/pkg/service"
 )
 
 // Cache : структура описывающуя наш контейнер-хранилище
@@ -12,17 +17,18 @@ type Cache struct {
 	defaultExpiration time.Duration
 	cleanupInterval   time.Duration
 	items             map[string]Item
+	service           *service.Service
 }
 
 // Item : структура для элемента
 type Item struct {
-	Value      interface{}
+	Value      *model.OrderClient
 	Created    time.Time
 	Expiration int64
 }
 
 // New : инициализация нового контейнера-хранилища
-func New(defaultExpiration, cleanupInterval time.Duration) *Cache {
+func New(defaultExpiration, cleanupInterval time.Duration, service *service.Service) *Cache {
 	// инициализируем карту(map) в паре ключ(string)/значение(Item)
 	items := make(map[string]Item)
 
@@ -30,19 +36,19 @@ func New(defaultExpiration, cleanupInterval time.Duration) *Cache {
 		items:             items,
 		defaultExpiration: defaultExpiration,
 		cleanupInterval:   cleanupInterval,
+		service:           service,
 	}
 
 	// Если интервал очистки больше 0, запускаем GC (удаление устаревших элементов)
 	if cleanupInterval > 0 {
-		cache.StartGC() // данный метод рассматривается ниже
+		cache.StartGC()
 	}
 
 	return &cache
 }
 
 // Set : возможность записывать данные в кэш
-func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
-
+func (c *Cache) Set(key string, value *model.OrderClient, duration time.Duration) {
 	var expiration int64
 
 	// Если продолжительность жизни равна 0 - используется значение по-умолчанию
@@ -58,6 +64,11 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
 	c.Lock()
 
 	defer c.Unlock()
+
+	if _, exists := c.items[key]; exists {
+		log.Printf("key : %s, is exist\n", key)
+		return
+	}
 
 	c.items[key] = Item{
 		Value:      value,
@@ -116,9 +127,8 @@ func (c *Cache) StartGC() {
 	go c.GC()
 }
 
-// GC :
+// GC проверяет истекшие ключи, записывает их в БД и удаляет из кеша
 func (c *Cache) GC() {
-
 	for {
 		// ожидаем время установленное в cleanupInterval
 		<-time.After(c.cleanupInterval)
@@ -129,12 +139,11 @@ func (c *Cache) GC() {
 
 		// Ищем элементы с истекшим временем жизни и удаляем из хранилища
 		if keys := c.expiredKeys(); len(keys) != 0 {
-			c.clearItems(keys)
-
+			c.writeToDatabase(keys)
+			//c.clearItems(keys)
 		}
 
 	}
-
 }
 
 // expiredKeys возвращает список "просроченных" ключей
@@ -153,14 +162,38 @@ func (c *Cache) expiredKeys() (keys []string) {
 	return
 }
 
-// clearItems удаляет ключи из переданного списка, в нашем случае "просроченные"
-func (c *Cache) clearItems(keys []string) {
+// writeToDatabase записывает просроченные ключи в БД
+func (c *Cache) writeToDatabase(keys []string) {
 
 	c.Lock()
 
 	defer c.Unlock()
 
-	for _, k := range keys {
-		delete(c.items, k)
+	fmt.Println("write")
+
+	for _, key := range keys {
+		value, found := c.items[key]
+		if !found {
+			continue
+		}
+
+		_, err := c.service.AddOrder(value.Value)
+		if err != nil {
+			log.Print(err)
+		}
+
+		delete(c.items, key)
 	}
 }
+
+// // clearItems удаляет ключи из переданного списка, в нашем случае "просроченные"
+// func (c *Cache) clearItems(keys []string) {
+
+// 	c.Lock()
+
+// 	defer c.Unlock()
+
+// 	for _, k := range keys {
+// 		delete(c.items, k)
+// 	}
+// }

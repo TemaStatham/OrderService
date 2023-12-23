@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/TemaStatham/OrderService/config"
@@ -19,7 +20,7 @@ const (
 )
 
 const (
-	publishTime = 5 * time.Second
+	publishTime = 30 * time.Second
 	pubPref     = "pub"
 )
 
@@ -43,7 +44,7 @@ func main() {
 	defer sc.Close()
 
 	for {
-		order := GetConstOrder()
+		order := GetRandomOrder()
 		orderJSON, err := json.Marshal(order)
 		if err != nil {
 			log.Fatalf("Error marshaling order to JSON: %v", err)
@@ -59,54 +60,79 @@ func main() {
 	}
 }
 
-func GetConstOrder() model.OrderClient {
+// GetRandomOrder генерирует случайный заказ
+func GetRandomOrder() model.OrderClient {
+	rand.Seed(time.Now().UnixNano())
+
 	return model.OrderClient{
-		OrderUID:    "defaultOrderUID",
-		TrackNumber: "defaultTrackNumber",
-		Entry:       "defaultEntry",
+		OrderUID:    getRandomString(10),
+		TrackNumber: getRandomString(10),
+		Entry:       getRandomString(10),
 		Delivery: model.Delivery{
-			Name:    "defaultName",
-			Phone:   "defaultPhone",
-			Zip:     "defaultZip",
-			City:    "defaultCity",
-			Address: "defaultAddress",
-			Region:  "defaultRegion",
-			Email:   "defaultEmail",
+			Name:    getRandomString(10),
+			Phone:   getRandomString(10),
+			Zip:     getRandomString(10),
+			City:    getRandomString(10),
+			Address: getRandomString(10),
+			Region:  getRandomString(10),
+			Email:   getRandomString(10),
 		},
 		Payment: model.Payment{
-			Transaction:  "defaultTransaction",
-			RequestID:    "defaultRequestID",
-			Currency:     "defaultCurrency",
-			Provider:     "defaultProvider",
-			Amount:       0, // Установите значение по умолчанию для int
-			PaymentDt:    0, // Установите значение по умолчанию для int
-			Bank:         "defaultBank",
-			DeliveryCost: 0, // Установите значение по умолчанию для int
-			GoodsTotal:   0, // Установите значение по умолчанию для int
-			CustomFee:    0, // Установите значение по умолчанию для int
+			Transaction:  getRandomString(10),
+			RequestID:    getRandomString(10),
+			Currency:     getRandomString(5),
+			Provider:     getRandomString(10),
+			Amount:       rand.Intn(1000), // случайное значение int до 1000
+			PaymentDt:    rand.Intn(1000), // случайное значение int до 1000
+			Bank:         getRandomString(10),
+			DeliveryCost: rand.Intn(1000), // случайное значение int до 1000
+			GoodsTotal:   rand.Intn(1000), // случайное значение int до 1000
+			CustomFee:    rand.Intn(100),  // случайное значение int до 100
 		},
 		Items: []model.Item{
 			{
-				ChrtID:      0, // Установите значение по умолчанию для int
-				TrackNumber: "defaultTrackNumber",
-				Price:       0, // Установите значение по умолчанию для int
-				Rid:         "defaultRid",
-				Name:        "defaultName",
-				Sale:        0, // Установите значение по умолчанию для int
-				Size:        "defaultSize",
-				TotalPrice:  0, // Установите значение по умолчанию для int
-				NmID:        0, // Установите значение по умолчанию для int
-				Brand:       "defaultBrand",
-				Status:      0, // Установите значение по умолчанию для int
+				ChrtID:      rand.Intn(1000),    // случайное значение int до 1000
+				TrackNumber: getRandomString(10),
+				Price:       rand.Intn(1000),    // случайное значение int до 1000
+				Rid:         getRandomString(10),
+				Name:        getRandomString(10),
+				Sale:        rand.Intn(100),     // случайное значение int до 100
+				Size:        getRandomString(5),
+				TotalPrice:  rand.Intn(1000),    // случайное значение int до 1000
+				NmID:        rand.Intn(1000),    // случайное значение int до 1000
+				Brand:       getRandomString(10),
+				Status:      rand.Intn(1000),    // случайное значение int до 1000
 			},
 		},
-		Locale:            "defaultLocale",
-		InternalSignature: "defaultInternalSignature",
-		CustomerID:        "defaultCustomerID",
-		DeliveryService:   "defaultDeliveryService",
-		Shardkey:          "defaultShardkey",
-		SmID:              0,           // Установите значение по умолчанию для int
-		DateCreated:       time.Time{}, // Установите значение по умолчанию для time.Time
-		OofShard:          "defaultOofShard",
+		Locale:            getRandomString(5),
+		InternalSignature: getRandomString(10),
+		CustomerID:        getRandomString(10),
+		DeliveryService:   getRandomString(10),
+		Shardkey:          getRandomString(5),
+		SmID:              rand.Intn(1000),       // случайное значение int до 1000
+		DateCreated:       getRandomTime(),        // случайная дата и время
+		OofShard:          getRandomString(10),
 	}
+}
+
+// getRandomString генерирует случайную строку заданной длины
+func getRandomString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	result := make([]byte, length)
+	for i := range result {
+		result[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(result)
+}
+
+// getRandomTime генерирует случайную дату и время
+func getRandomTime() time.Time {
+	year := rand.Intn(100) + 2000
+	month := rand.Intn(12) + 1
+	day := rand.Intn(28) + 1
+	hour := rand.Intn(24)
+	minute := rand.Intn(60)
+	second := rand.Intn(60)
+
+	return time.Date(year, time.Month(month), day, hour, minute, second, 0, time.UTC)
 }

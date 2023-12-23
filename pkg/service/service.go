@@ -1,9 +1,13 @@
 package service
 
-import "github.com/TemaStatham/OrderService/pkg/repository"
+import (
+	"github.com/TemaStatham/OrderService/pkg/model"
+	"github.com/TemaStatham/OrderService/pkg/repository"
+)
 
 type Order interface {
-	GetItem(orderID string)
+	GetOrder(orderID string) (*model.OrderClient, error)
+	AddOrder(order *model.OrderClient) (string, error)
 }
 
 type Service struct {
@@ -12,6 +16,6 @@ type Service struct {
 
 func NewService(repos *repository.Repository) *Service {
 	return &Service{
-		Order: NewOrderService(&repos.Orders),
+		Order: NewOrderService(repos.Orders),
 	}
 }

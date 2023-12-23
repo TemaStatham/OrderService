@@ -23,8 +23,8 @@ const (
 	cfgType = "yaml"
 	cfgPath = "./config"
 
-	cacheLifetime              = 0
-	lifetimeElementInsideCache = 10 * time.Hour
+	cacheLifetime              = 5 * time.Hour
+	lifetimeElementInsideCache = 5 * time.Second
 )
 
 func main() {
@@ -47,7 +47,13 @@ func main() {
 		return
 	}
 
-	c := cache.New(cacheLifetime, lifetimeElementInsideCache)
+	repos := repository.NewRepository(db)
+	service := service.NewService(repos)
+	hand := handler.NewHandler(service)
+	srv := new(server.Server)
+
+	c := cache.New(cacheLifetime, lifetimeElementInsideCache, service)
+	//c.StartGC()
 
 	go func() {
 		nats.Connect(c, nats.Config{
@@ -64,10 +70,6 @@ func main() {
 		})
 	}()
 
-	repos := repository.NewRepository(db, c)
-	service := service.NewService(repos)
-	hand := handler.NewHandler(service)
-	srv := new(server.Server)
 	go func() {
 		if err := srv.Run(cfg.ServConfig.Port, hand.InitRoutes()); err != nil {
 			log.Fatalf("error occured while running http server: %s", err.Error())

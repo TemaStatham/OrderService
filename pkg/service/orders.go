@@ -1,17 +1,33 @@
 package service
 
-import "github.com/TemaStatham/OrderService/pkg/repository"
+import (
+	"fmt"
+
+	"github.com/TemaStatham/OrderService/pkg/model"
+	"github.com/TemaStatham/OrderService/pkg/repository"
+)
 
 type OrderSerice struct {
-	r *repository.Orders
+	r repository.Orders
 }
 
-func NewOrderService(r *repository.Orders) *OrderSerice {
+func NewOrderService(r repository.Orders) *OrderSerice {
 	return &OrderSerice{
 		r: r,
 	}
 }
 
-func (o *OrderSerice) GetItem(orderID string) {
+func (o *OrderSerice) GetOrder(orderID string) (*model.OrderClient, error) {
+	if orderID == "" {
+		return nil, fmt.Errorf("orderID is nil")
+	}
+	return o.r.GetOrder(orderID)
+}
 
+func (o *OrderSerice) AddOrder(order *model.OrderClient) (string, error) {
+	if order == nil {
+		return "", fmt.Errorf("orderptr is nil")
+	}
+	
+	return o.r.AddOrder(order)
 }

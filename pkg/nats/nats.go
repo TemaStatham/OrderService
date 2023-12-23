@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	lifetimeElementInsideCache = 5 * time.Hour
+	lifetimeElementInsideCache = 5 * time.Second
 	subPref                    = "sub"
 )
 
@@ -81,7 +81,7 @@ func handleRequest(msg *stan.Msg, c *cache.Cache) {
 		return
 	}
 
-	c.Set(data.OrderUID, data, lifetimeElementInsideCache)
+	c.Set(data.OrderUID, &data, lifetimeElementInsideCache)
 
 	fmt.Printf("Received a message: %v\n", data)
 }
