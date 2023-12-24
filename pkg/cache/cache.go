@@ -11,7 +11,6 @@ import (
 	"github.com/TemaStatham/OrderService/pkg/service"
 )
 
-
 const (
 	countOfRestoredItems       = 10
 	lifetimeElementInsideCache = 60
@@ -51,9 +50,9 @@ func New(defaultExpiration, cleanupInterval time.Duration, service *service.Serv
 	}
 
 	// Инициализация кэша из базы данных
-    if err := cache.RestoreCache(); err != nil {
-        log.Printf("Failed to restore data from database: %v", err)
-    }
+	if err := cache.RestoreCache(); err != nil {
+		log.Printf("Failed to restore data from database: %v", err)
+	}
 
 	return &cache
 }

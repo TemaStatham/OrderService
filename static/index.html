@@ -30,16 +30,65 @@
                     .then((response) => response.json())
                     .then((data) => {
                         console.log("Success:", data);
-
-                        // Отобразим полученные данные в div с id "result"
+                        const tab = `&nbsp;&nbsp;&nbsp;&nbsp;`;
                         const resultDiv = document.getElementById("result");
-                        resultDiv.innerHTML = `<p>Message: ${data.message}</p>`;
-
-                        // Добавим отображение данных заказа (пример)
+                        resultDiv.innerHTML = "";
                         if (data.order) {
-                            resultDiv.innerHTML += `<p>Order Details: ${JSON.stringify(
-                                data.order
-                            )}</p>`;
+                            resultDiv.innerHTML += `<p>Order Details:</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Order UID: ${data.order.order_uid}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Track Number: ${data.order.track_number}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Entry: ${data.order.entry}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Locale: ${data.order.locale}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Internal Signature: ${data.order.internal_signature}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Customer ID: ${data.order.customer_id}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Delivery Service: ${data.order.delivery_service}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Shardkey: ${data.order.shardkey}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Sm ID: ${data.order.sm_id}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Date Created: ${data.order.date_created}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Oof Shard: ${data.order.oof_shard}</p>`;
+                            resultDiv.innerHTML += `<br></br>`;
+
+                            resultDiv.innerHTML += `<p>Delivery Details:</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Name: ${data.order.delivery.name}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Phone: ${data.order.delivery.phone}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Zip: ${data.order.delivery.zip}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}City: ${data.order.delivery.city}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Address: ${data.order.delivery.address}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Region: ${data.order.delivery.region}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Email: ${data.order.delivery.email}</p>`;
+                            resultDiv.innerHTML += `<br></br>`;
+
+                            resultDiv.innerHTML += `<p>Payment Details:</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Transaction: ${data.order.payment.transaction}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Request ID: ${data.order.payment.request_id}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Currency: ${data.order.payment.currency}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Provider: ${data.order.payment.provider}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Amount: ${data.order.payment.amount}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Payment Date: ${data.order.payment.payment_dt}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Bank: ${data.order.payment.bank}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Delivery Cost: ${data.order.payment.delivery_cost}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Goods Total: ${data.order.payment.goods_total}</p>`;
+                            resultDiv.innerHTML += `<p>${tab}Custom Fee: ${data.order.payment.custom_fee}</p>`;
+                            resultDiv.innerHTML += `<br></br>`;
+
+                            resultDiv.innerHTML += `<p>Items:</p>`;
+
+                            for (let i = 0; i < data.order.items.length; i++) {
+                                const item = data.order.items[i];
+                                resultDiv.innerHTML += `<p>${tab}Item ${
+                                    i + 1
+                                }:</p>`;
+                                resultDiv.innerHTML += `<p>${tab}Name: ${item.name}</p>`;
+                                resultDiv.innerHTML += `<p>${tab}Price: ${item.price}</p>`;
+                                resultDiv.innerHTML += `<p>${tab}RID: ${item.rid}</p>`; // Добавленное поле
+                                resultDiv.innerHTML += `<p>${tab}Sale: ${item.sale}</p>`; // Добавленное поле
+                                resultDiv.innerHTML += `<p>${tab}Size: ${item.size}</p>`;
+                                resultDiv.innerHTML += `<p>${tab}Total Price: ${item.total_price}</p>`;
+                                resultDiv.innerHTML += `<p>${tab}Track Number: ${item.track_number}</p>`; // Добавленное поле
+                                resultDiv.innerHTML += `<p>${tab}Brand: ${item.brand}</p>`; // Добавленное поле
+                                resultDiv.innerHTML += `<p>${tab}Status: ${item.status}</p>`; // Добавленное поле
+                                resultDiv.innerHTML += `<p></p>`;
+                            }
                         }
                     })
                     .catch((error) => {
