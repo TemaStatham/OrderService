@@ -185,18 +185,6 @@ func (c *Cache) writeToDatabase(keys []string) {
 	}
 }
 
-// // clearItems удаляет ключи из переданного списка, в нашем случае "просроченные"
-// func (c *Cache) clearItems(keys []string) {
-
-// 	c.Lock()
-
-// 	defer c.Unlock()
-
-// 	for _, k := range keys {
-// 		delete(c.items, k)
-// 	}
-// }
-
 // RestoreCache получает данные из базы данных и инициализирует кэш
 func (c *Cache) RestoreCache() error {
 	orders, err := c.service.GetRecentOrders(countOfRestoredItems)

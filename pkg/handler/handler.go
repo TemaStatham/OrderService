@@ -18,14 +18,6 @@ func NewHandler(services *service.Service, c *cache.Cache) *Handler {
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
-	// orders := router.Group("/orders")
-	// {
-	// 	orders.POST("", h.getOrders)
-	// 	orders.GET("", func(ctx *gin.Context) {
-	// 		h.showHTMLPage(ctx, "index.html", 1)
-	// 	})
-	// }
-
 	router.POST("/orders", h.getOrders)
 	router.GET("/orders", func(ctx *gin.Context) {
 		h.showHTMLPage(ctx, "index.html", 1)

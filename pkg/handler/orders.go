@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -34,12 +33,10 @@ func (h *Handler) getOrders(c *gin.Context) {
 	if f {
 		o := *order
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Data received successfully",
-			"order":   o,
+			"order": o,
 		})
 		return
 	}
-	fmt.Print("check order in db\n")
 
 	order, err := h.services.GetOrder(requestData.ID)
 	if err != nil {
@@ -48,7 +45,6 @@ func (h *Handler) getOrders(c *gin.Context) {
 	}
 	o := *order
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Data received successfully",
-		"order":   o,
+		"order": o,
 	})
 }

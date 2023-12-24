@@ -82,25 +82,21 @@ func (o *OrdersPostgres) AddOrder(order *model.OrderClient) (string, error) {
 		err = tx.Commit()
 	}()
 
-	fmt.Print("4\n")
 	orderID, err := o.addOrder(tx, order)
 	if err != nil {
 		return "", fmt.Errorf("failed to add order %s", err)
 	}
 
-	fmt.Print("1\n")
 	_, err = o.addDelivery(tx, order.Delivery, order.OrderUID)
 	if err != nil {
 		return "", fmt.Errorf("failed to add delivery %s", err)
 	}
 
-	fmt.Print("2\n")
 	_, err = o.addPayment(tx, order.Payment, order.OrderUID)
 	if err != nil {
 		return "", fmt.Errorf("failed to add payment %s", err)
 	}
 
-	fmt.Print("3\n")
 	// itemIDs := make([]string, 0)
 	for _, item := range order.Items {
 		_, err = o.addItem(tx, item, order.OrderUID)
